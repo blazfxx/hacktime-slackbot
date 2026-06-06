@@ -2,388 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minigames — Slack Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minigames Slack Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black: #0d0d0d;
-      --white: #f5f2eb;
-      --accent: #7fff6a;
-      --accent2: #6af0ff;
-      --muted: #3a3a3a;
-      --card-bg: #161616;
-      --border: rgba(255,255,255,0.08);
-    }
-
-    html { scroll-behavior: smooth; }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--black);
-      color: var(--white);
+      background: #0d0d0d;
+      color: #f5f2eb;
       font-family: 'Syne', sans-serif;
       min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* noise overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* glowing orbs */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.18;
-    }
-    .orb-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; right: -100px; }
-    .orb-2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; left: -100px; }
-
-    nav {
-      position: relative;
-      z-index: 10;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 1.5rem 3rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--white);
-      text-decoration: none;
-    }
-    .logo span { color: var(--accent); }
-
-    .nav-badge {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      padding: 0.3rem 0.8rem;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: rgba(245,242,235,0.5);
-      letter-spacing: 0.08em;
-    }
-
-    /* hero */
-    .hero {
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 7rem 2rem 5rem;
+      justify-content: center;
+      padding: 2rem;
       text-align: center;
     }
-
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-      border: 1px solid rgba(127,255,106,0.25);
-      padding: 0.35rem 1rem;
-      border-radius: 999px;
-      margin-bottom: 2rem;
-      text-transform: uppercase;
-    }
-    .hero-tag::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: blink 1.4s ease-in-out infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
-
-    h1 {
-      font-size: clamp(3rem, 8vw, 6rem);
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: -0.04em;
-      margin-bottom: 1.5rem;
-    }
-
-    h1 .line2 { color: var(--accent); }
-
-    .hero-sub {
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: rgba(245,242,235,0.55);
-      max-width: 500px;
-      margin: 0 auto 3rem;
-      line-height: 1.7;
-    }
-
-    .add-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      background: var(--accent);
-      color: #0d0d0d;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      padding: 1rem 2.2rem;
-      border-radius: 999px;
-      text-decoration: none;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-      letter-spacing: -0.01em;
-    }
-    .add-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(127,255,106,0.3);
-    }
-    .add-btn:active { transform: translateY(0); }
-
-    .add-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-
-    .hint {
-      margin-top: 1rem;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      color: rgba(245,242,235,0.3);
-      letter-spacing: 0.05em;
-    }
-
-    /* commands section */
-    .section {
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-    }
-
-    .section-label {
+    .tag {
       font-family: 'DM Mono', monospace;
       font-size: 0.7rem;
       letter-spacing: 0.14em;
-      color: rgba(245,242,235,0.35);
+      color: #7fff6a;
+      border: 1px solid rgba(127,255,106,0.25);
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
       text-transform: uppercase;
-      margin-bottom: 2.5rem;
     }
-
-    .commands-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
+    h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 1.2rem;
     }
-
-    .cmd-card {
-      background: var(--card-bg);
-      padding: 1.75rem;
-      transition: background 0.2s ease;
-    }
-    .cmd-card:hover { background: #1e1e1e; }
-
-    .cmd-tag {
-      display: inline-block;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--accent);
-      background: rgba(127,255,106,0.08);
-      border: 1px solid rgba(127,255,106,0.2);
-      padding: 0.25rem 0.65rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-    }
-
-    .cmd-card h3 {
+    h1 span { color: #7fff6a; }
+    p {
+      color: rgba(245,242,235,0.5);
       font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
-      letter-spacing: -0.02em;
+      line-height: 1.7;
+      max-width: 440px;
+      margin: 0 auto 2.5rem;
     }
-
-    .cmd-card p {
-      font-size: 0.85rem;
-      font-weight: 400;
-      color: rgba(245,242,235,0.45);
-      line-height: 1.6;
-    }
-
-    /* divider */
-    .divider {
-      position: relative;
-      z-index: 1;
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 0 2rem;
-    }
-
-    /* how it works */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin-top: 2.5rem;
-    }
-
-    .step {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .step-num {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--accent2);
-      letter-spacing: 0.1em;
-    }
-
-    .step h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .step p {
-      font-size: 0.82rem;
-      color: rgba(245,242,235,0.4);
-      line-height: 1.6;
-    }
-
-    /* footer */
-    footer {
-      position: relative;
-      z-index: 1;
-      border-top: 1px solid var(--border);
-      padding: 2rem 3rem;
-      display: flex;
+    .btn {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 0.6rem;
+      background: #7fff6a;
+      color: #0d0d0d;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.85rem 2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(127,255,106,0.25);
+    }
+    .commands {
+      display: flex;
+      gap: 0.5rem;
       flex-wrap: wrap;
-      gap: 1rem;
+      justify-content: center;
+      margin-top: 3rem;
     }
-
-    footer p {
-      font-size: 0.78rem;
-      color: rgba(245,242,235,0.25);
+    .cmd {
       font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: #6af0ff;
+      background: rgba(106,240,255,0.06);
+      border: 1px solid rgba(106,240,255,0.2);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
     }
-
-    /* responsive */
-    @media (max-width: 600px) {
-      nav { padding: 1.25rem 1.5rem; }
-      .hero { padding: 5rem 1.5rem 3rem; }
-      .section { padding: 3rem 1.5rem; }
-      footer { padding: 1.5rem; }
+    footer {
+      position: fixed;
+      bottom: 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(245,242,235,0.2);
     }
   </style>
 </head>
 <body>
+  <div class="tag">Slack Bot</div>
+  <h1>Play games in<br><span>your Slack.</span></h1>
+  <p>Tic Tac Toe, Rock Paper Scissors, and more — directly in any channel.</p>
 
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
+  <!-- Replace this href with your Slack OAuth URL after activating public distribution -->
+  <a href="YOUR_SLACK_OAUTH_URL_HERE" class="btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6 15a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0-8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
+    </svg>
+    Add to Slack
+  </a>
 
-  <nav>
-    <a href="#" class="logo">mini<span>games</span></a>
-    <span class="nav-badge">SLACK BOT</span>
-  </nav>
+  <div class="commands">
+    <span class="cmd">/3t start</span>
+    <span class="cmd">/rps rock</span>
+    <span class="cmd">/flip</span>
+    <span class="cmd">/hello</span>
+  </div>
 
-  <section class="hero">
-    <div class="hero-tag">Free to use</div>
-    <h1>
-      Games inside<br>
-      <span class="line2">your Slack.</span>
-    </h1>
-    <p class="hero-sub">
-      A lightweight bot that brings Tic Tac Toe, Rock Paper Scissors, and more directly into your workspace.
-    </p>
-
-    <!-- Replace href with your actual Slack OAuth URL -->
-    <a href="YOUR_SLACK_OAUTH_URL" class="add-btn">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 15a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0-8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm6 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm-6 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="currentColor"/>
-      </svg>
-      Add to Slack
-    </a>
-    <p class="hint">No account required · Free forever</p>
-  </section>
-
-  <hr class="divider" />
-
-  <section class="section">
-    <p class="section-label">Commands</p>
-    <div class="commands-grid">
-      <div class="cmd-card">
-        <span class="cmd-tag">/3t</span>
-        <h3>Tic Tac Toe</h3>
-        <p>Start a game with <code style="color:var(--accent2)">/3t start</code>, make moves with <code style="color:var(--accent2)">/3t move 1–9</code>. Beat the bot if you can.</p>
-      </div>
-      <div class="cmd-card">
-        <span class="cmd-tag">/rps</span>
-        <h3>Rock Paper Scissors</h3>
-        <p>Quick one-shot game. Try <code style="color:var(--accent2)">/rps rock</code>, <code style="color:var(--accent2)">/rps paper</code>, or <code style="color:var(--accent2)">/rps scissors</code>.</p>
-      </div>
-      <div class="cmd-card">
-        <span class="cmd-tag">/flip</span>
-        <h3>Coin Flip</h3>
-        <p>Can't decide? Let fate choose. Instant heads or tails.</p>
-      </div>
-      <div class="cmd-card">
-        <span class="cmd-tag">/hello</span>
-        <h3>Help</h3>
-        <p>Lists all available commands and how to use them. Great for first-timers.</p>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider" />
-
-  <section class="section">
-    <p class="section-label">How it works</p>
-    <div class="steps">
-      <div class="step">
-        <span class="step-num">01</span>
-        <h3>Add to your workspace</h3>
-        <p>Click the button above and authorize the bot in your Slack workspace.</p>
-      </div>
-      <div class="step">
-        <span class="step-num">02</span>
-        <h3>Invite to a channel</h3>
-        <p>Type <code style="color:var(--accent2); font-family: 'DM Mono', monospace; font-size:0.8rem;">/invite @minigames</code> in any channel.</p>
-      </div>
-      <div class="step">
-        <span class="step-num">03</span>
-        <h3>Start playing</h3>
-        <p>Run any slash command. Responses are only visible to you so you won't spam the channel.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <p>© 2026 Minigames Bot</p>
-    <p>Built with Python · slack-bolt</p>
-  </footer>
-
+  <footer>minigames bot · free forever</footer>
 </body>
 </html>
