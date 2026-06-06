@@ -1,0 +1,95 @@
+import os
+import random
+from dotenv import load_dotenv
+from slack_bolt import App
+from slack_bolt.adapter.socket_mode import SocketModeHandler
+from tictactoe import TicTacToe, format_board
+
+load_dotenv()
+
+app = App(token=os.environ["SLACK_BOT_TOKEN"])
+
+active_games: dict[str, TicTacToe] = {}
+
+
+@app.command("/3t")
+def tictactoe(ack, respond, command):
+    ack()
+    channel = command["channel_id"]
+    text = command.get("text", "").strip().lower()
+    parts = text.split()
+    action = parts[0] if parts else ""
+
+    if action == "start":
+        active_games[channel] = TicTacToe()
+        respond(
+            "TicTacToe game started. You are the Xs\n"
+            "For you to move, do /3t move <and anything between 1-9>\n\n"
+            + format_board(active_games[channel].board)
+        )
+        return
+
+    if action == "move":
+        if channel not in active_games:
+            respond("No games rn. Start one with /3t start")
+            return
+
+        game = active_games[channel]
+
+        if len(parts) < 2 or not parts[1].isdigit():
+            respond("Do: '/3t move <1-9>'")
+            return
+
+        pos = int(parts[1]) - 1
+        if pos < 0 or pos > 8:
+            respond("Position has to be between 1 and 9")
+            return
+
+        ok, err = game.player_move(pos)
+        if not ok:
+            respond(f"Invalid move: {err}")
+            return
+
+        board_str = format_board(game.board)
+
+        if game.check_winner("X"):
+            respond(f"You won!\n\n{board_str}")
+            del active_games[channel]
+            return
+
+        if game.is_draw():
+            respond(f"It is a draw\n\n{board_str}")
+            del active_games[channel]
+            return
+
+        bot_pos = game.bot_move()
+        board_str = format_board(game.board)
+
+        if game.check_winner("O"):
+            respond(f"Bot won... oops :(\n\n{board_str}")
+            del active_games[channel]
+            return
+
+        if game.is_draw():
+            respond(f"It is a draw\n\n{board_str}")
+            del active_games[channel]
+            return
+
+        respond(f"You moved, bot played {bot_pos + 1}.\n\n{board_str}")
+        return
+
+    if action == "quit":
+        if channel in active_games:
+            del active_games[channel]
+            respond("Game quit")
+        else:
+            respond("No active game")
+        return
+
+    respond("Unknown command. Try:\n• `/3t start`\n• `/3t move <1-9>`\n• `/3t quit`")
+
+
+if __name__ == "__main__":
+    handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
+    print("Bot is running!")
+    handler.start()
