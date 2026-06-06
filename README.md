@@ -21,3 +21,26 @@ then run the bot:
 python bot.py
 ```
 
+
+# How to setup the bot?
+Go here:
+https://api.slack.com/apps
+
+Create a new app from scratch
+
+Scroll down in general -> App-Level Token
+Create new one with write scope (this is your App Token)
+
+
+Got to sockets -> enable it
+scroll down and click on "Slash commands"
+create new slack commad: /3t
+
+for bot token, go to oAuth and perms
+scroll down, add the `chat:write` and `commands` perm
+scroll back app and create an oAuth token
+
+done
+i think
+hopefully
+idk prob forgot something ig
