@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 from tictactoe import TicTacToe, format_board
+import requests
 
 load_dotenv()
 
@@ -119,6 +120,38 @@ def flip(ack, body, logger, respond):
     logger.info(body)
     result = random.choice(["Heads 🪙", "Tails 🪙"])
     respond(f"*Coin flip:* {result}")
+
+
+
+@app.command("/blaze-ask")
+def blaze_ask(ack, respond, command):
+    ack()
+    question = command.get("text", "").strip()
+    if not question:
+        respond("Do: '/blaze-ask <whatever>'")
+        return
+    try:
+        response = requests.post(
+            f"{os.environ['AI_BASE_URL']}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {os.environ['AI_API_KEY']}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": os.environ["AI_MODEL"],
+                "messages": [{"role": "user", "content": question}],
+                "max_tokens": 1024,
+            }
+        )
+        print("Status:", response.status_code)
+        print("Raw response:", response.text)
+        data = response.json()
+        answer = data["choices"][0]["message"]["content"]
+        respond(f"*You: {question}*\n\n*gemma-3n-e2b-it:*\n{answer}")
+    except Exception as e:
+        respond(f"Error: {e}")
+        print("Exception:", e)
+
 
 if __name__ == "__main__":
     handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
