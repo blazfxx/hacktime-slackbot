@@ -89,6 +89,37 @@ def tictactoe(ack, respond, command):
     respond("Unknown command. Try:\n• `/3t start`\n• `/3t move <1-9>`\n• `/3t quit`")
 
 
+
+
+CHOICES = ["rock", "paper", "scissors"]
+EMOJI = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
+BEATS = {"rock": "scissors", "paper": "rock", "scissors": "paper"}
+
+
+@app.command("/blaze-rps")
+def rps(ack, respond, command):
+    ack()
+    user_choice = command.get("text", "").strip().lower()
+    if user_choice not in CHOICES:
+        respond("Usage: `/blaze-rps rock|paper|scissors`")
+        return
+    bot_choice = random.choice(CHOICES)
+    u, b = EMOJI[user_choice], EMOJI[bot_choice]
+    if user_choice == bot_choice:
+        result = "It is a tie!"
+    elif BEATS[user_choice] == bot_choice:
+        result = "You win!"
+    else:
+        result = "You lost..."
+    respond(f"You: {u} *{user_choice.capitalize()}*  vs  Bot: {b} *{bot_choice.capitalize()}*\n{result}")
+
+@app.command("/blaze-flip")
+def flip(ack, body, logger, respond):
+    ack()
+    logger.info(body)
+    result = random.choice(["Heads 🪙", "Tails 🪙"])
+    respond(f"*Coin flip:* {result}")
+
 if __name__ == "__main__":
     handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
     print("Bot is running!")
