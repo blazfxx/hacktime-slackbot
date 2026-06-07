@@ -10,6 +10,11 @@ create a new .env file with this:
 
 SLACK_BOT_TOKEN=xoxb-
 SLACK_APP_TOKEN=xapp-
+
+# for AI features (openai compat)
+AI_BASE_URL= # needs the /v1
+AI_API_KEY=
+AI_MODEL=
 ```
 
 install the reqs:
